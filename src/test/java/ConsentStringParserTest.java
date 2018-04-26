@@ -1,4 +1,3 @@
-package com.triplelift.shared.util;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;

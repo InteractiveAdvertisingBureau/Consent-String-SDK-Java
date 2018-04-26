@@ -1,4 +1,3 @@
-package com.triplelift.shared.util;
 
 import java.text.ParseException;
 import java.time.Instant;
