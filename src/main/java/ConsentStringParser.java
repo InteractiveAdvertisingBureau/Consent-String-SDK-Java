@@ -196,10 +196,16 @@ public class ConsentStringParser {
 
 	/**
 	 *
-	 * @return a list of purposes, indexible by purpose id, to which the user may have consented
+	 * @return a list of purpose id's which are permitted according to this consent string
 	 */
-	public List<Boolean> getPurposes() {
-		return allowedPurposes;
+	public List<Integer> getAlllowedPurposes() {
+		List<Integer> purposes = new ArrayList<Integer>();
+		for (int i = 1, ii = allowedPurposes.size(); i <= ii; i++) {
+			if (isPurposeAllowed(i)) {
+				purposes.add(i);
+			}
+		}
+		return purposes;
 	}
 
 	/**
