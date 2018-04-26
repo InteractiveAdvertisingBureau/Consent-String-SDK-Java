@@ -1,2 +1,7 @@
-# Consent-String-SDK-Java
-Transparency and Consent Framework Consent String SDK Javascript
+A java implementation of the IAB consent string 1.1 spec. 
+
+to test run the following command
+
+```
+gradle test
+```
