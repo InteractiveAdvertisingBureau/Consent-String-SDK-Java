@@ -14,11 +14,11 @@ public class ConsentStringParserTest {
 		String consentString = "BN5lERiOMYEdiAOAWeFRAAYAAaAAptQ";
 
 		ConsentStringParser consent = new ConsentStringParser(consentString);
-		assertEquals(14, consent.getCmpID());
+		assertEquals(14, consent.getCmpId());
 		assertEquals(22, consent.getCmpVersion());
 		assertEquals("FR", consent.getConsentLanguage());
-		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getCookieCreated());
-		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getCookieLastUpdated());
+		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getConsentRecordCreated());
+		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getConsentRecordLastUpdated());
 		assertEquals(5, consent.getAlllowedPurposes().size());
 		assertTrue(consent.isPurposeAllowed(2));
 		assertFalse(consent.isPurposeAllowed(1));
@@ -37,11 +37,11 @@ public class ConsentStringParserTest {
 		String consentString = "BN5lERiOMYEdiAKAWXEND1HoSBE6DAFAApAMgBkIDIgM0AgOJxAnQA";
 
 		ConsentStringParser consent = new ConsentStringParser(consentString);
-		assertEquals(10, consent.getCmpID());
+		assertEquals(10, consent.getCmpId());
 		assertEquals(22, consent.getCmpVersion());
 		assertEquals("EN", consent.getConsentLanguage());
-		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getCookieCreated());
-		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getCookieLastUpdated());
+		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getConsentRecordCreated());
+		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getConsentRecordLastUpdated());
 		assertEquals(8, consent.getAlllowedPurposes().size());
 		assertTrue(consent.isPurposeAllowed(4));
 		assertFalse(consent.isPurposeAllowed(1));

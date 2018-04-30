@@ -53,8 +53,8 @@ public class ConsentStringParser {
 	private final Bits bits;
 	// fields contained in the consent string
 	private final int version;
-	private final Instant cookieCreated;
-	private final Instant cookieLastUpdated;
+	private final Instant consentRecordCreated;
+	private final Instant consentRecordLastUpdated;
 	private final int cmpID;
 	private final int cmpVersion;
 	private final int consentScreenID;
@@ -66,6 +66,8 @@ public class ConsentStringParser {
 	// only used when range entry is enabled
 	private List<RangeEntry> rangeEntries;
 	private boolean defaultConsent;
+
+	private List<Integer> integerPurposes = null;
 
 	private static Decoder decoder = Base64.getUrlDecoder();
 
@@ -97,8 +99,8 @@ public class ConsentStringParser {
 
 		this.version = bits.getInt(VERSION_BIT_OFFSET, VERSION_BIT_SIZE);
 		String s = bits.getBinaryString();
-		this.cookieCreated = bits.getInstantFromEpochDemiseconds(CREATED_BIT_OFFSET, CREATED_BIT_SIZE);
-		this.cookieLastUpdated = bits.getInstantFromEpochDemiseconds(UPDATED_BIT_OFFSET, UPDATED_BIT_SIZE);
+		this.consentRecordCreated = bits.getInstantFromEpochDemiseconds(CREATED_BIT_OFFSET, CREATED_BIT_SIZE);
+		this.consentRecordLastUpdated = bits.getInstantFromEpochDemiseconds(UPDATED_BIT_OFFSET, UPDATED_BIT_SIZE);
 		this.cmpID = bits.getInt(CMP_ID_OFFSET, CMP_ID_SIZE);
 		this.cmpVersion = bits.getInt(CMP_VERSION_OFFSET, CMP_VERSION_SIZE);
 		this.consentScreenID = bits.getInt(CONSENT_SCREEN_SIZE_OFFSET, CONSENT_SCREEN_SIZE);
@@ -142,18 +144,18 @@ public class ConsentStringParser {
 	}
 
 	/**
-	 * @return the {@link Instant} at which the cookie was created
+	 * @return the {@link Instant} at which the consent record was created
 	 */
-	public Instant getCookieCreated() {
-		return cookieCreated;
+	public Instant getConsentRecordCreated() {
+		return consentRecordCreated;
 	}
 
 	/**
 	 *
 	 * @return the {@link Instant} at which the cookie was last updated
 	 */
-	public Instant getCookieLastUpdated() {
-		return cookieLastUpdated;
+	public Instant getConsentRecordLastUpdated() {
+		return consentRecordLastUpdated;
 	}
 
 	/**
@@ -168,7 +170,7 @@ public class ConsentStringParser {
 	 *
 	 * @return the id of the consent management partner that created this consent string
 	 */
-	public int getCmpID() {
+	public int getCmpId() {
 		return cmpID;
 	}
 
@@ -183,7 +185,7 @@ public class ConsentStringParser {
 	 *
 	 * @return the id of the string through which the user gave consent in the CMP UI
 	 */
-	public int getConsentScreenID() {
+	public int getConsentScreen() {
 		return consentScreenID;
 	}
 
@@ -199,13 +201,18 @@ public class ConsentStringParser {
 	 * @return a list of purpose id's which are permitted according to this consent string
 	 */
 	public List<Integer> getAlllowedPurposes() {
+		if (integerPurposes != null) {
+			return integerPurposes;
+		}
 		List<Integer> purposes = new ArrayList<Integer>();
 		for (int i = 1, ii = allowedPurposes.size(); i <= ii; i++) {
 			if (isPurposeAllowed(i)) {
 				purposes.add(i);
 			}
 		}
+		integerPurposes = purposes;
 		return purposes;
+
 	}
 
 	/**
