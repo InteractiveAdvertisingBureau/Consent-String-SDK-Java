@@ -2,7 +2,7 @@
 
 Encode and decode web-safe base64 consent information with the IAB EU's GDPR Transparency and Consent Framework.
 
-This library is a JavaScript reference implementation for dealing with consent strings in the IAB EU's GDPR Transparency and Consent Framework.  
+This library is a Java reference implementation for dealing with consent strings in the IAB EU's GDPR Transparency and Consent Framework.  
 It should be used by anyone who receives or sends consent information like vendors that receive consent data from a partner, or consent management platforms that need to encode/decode the global cookie.
 
 The IAB specification for the consent string format is available on the [IAB Github](https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/Consent%20string%20and%20vendor%20list%20formats%20v1.1%20Final.md) (section "Vendor Consent Cookie Format").
