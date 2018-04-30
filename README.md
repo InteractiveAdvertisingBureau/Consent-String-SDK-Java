@@ -1,3 +1,12 @@
+
+A java implementation of the IAB consent string 1.1 spec. 
+
+to test run the following command
+
+```
+gradle test
+```
+=======
 # Transparency and Consent Framework: Consent-String-SDK-Java
 
 Encode and decode web-safe base64 consent information with the IAB EU's GDPR Transparency and Consent Framework.
