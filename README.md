@@ -1,4 +1,4 @@
-# Consent-String-SDK-Java
+# Transparency and Consent Framework: Consent-String-SDK-Java
 
 Encode and decode web-safe base64 consent information with the IAB EU's GDPR Transparency and Consent Framework.
 
