@@ -59,4 +59,17 @@ public class ConsentStringParserTest {
 
 	}
 
+	@Test
+	public void testDidomi() throws ParseException {
+		String consentString = "BONZt-1ONZt-1AHABBENAO-AAAAHCAEAASABmADYAOAAeA";
+		ConsentStringParser consent = new ConsentStringParser(consentString);
+
+		assertTrue(consent.isPurposeAllowed(1));
+		assertTrue(consent.isPurposeAllowed(3));
+		assertTrue(consent.isVendorAllowed(28));
+		assertFalse(consent.isVendorAllowed(1));
+		assertFalse(consent.isVendorAllowed(3));
+		assertTrue(consent.isVendorAllowed(27));
+	}
+
 }
