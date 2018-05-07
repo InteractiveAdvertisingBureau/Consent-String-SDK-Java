@@ -33,8 +33,8 @@ public class ConsentStringParserTest {
 	}
 
 	@Test
-	public void testRangeEntry() throws ParseException {
-		String consentString = "BN5lERiOMYEdiAKAWXEND1HoSBE6DAFAApAMgBkIDIgM0AgOJxAnQA";
+	public void testRangeEntryNoConsent() throws ParseException {
+		String consentString = "BN5lERiOMYEdiAKAWXEND1HoSBE6CAFAApAMgBkIDIgM0AgOJxAnQA==";
 
 		ConsentStringParser consent = new ConsentStringParser(consentString);
 		assertEquals(10, consent.getCmpId());
@@ -57,6 +57,19 @@ public class ConsentStringParserTest {
 		assertFalse(consent.isVendorAllowed(3244));
 		assertEquals(consentString, consent.getConsentString());
 
+	}
+
+	@Test
+	public void testRangeEntryConsent() throws ParseException {
+		String consentString = "BONZt-1ONZt-1AHABBENAO-AAAAHCAEAASABmADYAOAAeA";
+		ConsentStringParser consent = new ConsentStringParser(consentString);
+
+		assertTrue(consent.isPurposeAllowed(1));
+		assertTrue(consent.isPurposeAllowed(3));
+		assertTrue(consent.isVendorAllowed(28));
+		assertFalse(consent.isVendorAllowed(1));
+		assertFalse(consent.isVendorAllowed(3));
+		assertTrue(consent.isVendorAllowed(27));
 	}
 
 }

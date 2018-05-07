@@ -235,6 +235,9 @@ public class ConsentStringParser {
 
 	private boolean findVendorIdInRange(int vendorId) {
 		int limit = rangeEntries.size();
+		if (limit == 0) {
+			return false;
+		}
 		int index = limit / 2;
 		while (index >= 0 && index < limit) {
 			RangeEntry entry = rangeEntries.get(index);
@@ -262,7 +265,7 @@ public class ConsentStringParser {
 	public boolean isVendorAllowed(int vendorId) {
 		if (vendorEncodingType == VENDOR_ENCODING_RANGE) {
 			boolean present = findVendorIdInRange(vendorId);
-			return present && defaultConsent;
+			return present != defaultConsent;
 		} else {
 			return bits.getBit(VENDOR_BITFIELD_OFFSET + vendorId - 1);
 		}
