@@ -1,3 +1,4 @@
+package com.iab.gdpr;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -19,7 +20,7 @@ public class ConsentStringParserTest {
 		assertEquals("FR", consent.getConsentLanguage());
 		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getConsentRecordCreated());
 		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getConsentRecordLastUpdated());
-		assertEquals(5, consent.getAlllowedPurposes().size());
+		assertEquals(5, consent.getAllowedPurposes().size());
 		assertTrue(consent.isPurposeAllowed(2));
 		assertFalse(consent.isPurposeAllowed(1));
 		assertTrue(consent.isPurposeAllowed(21));
@@ -42,7 +43,7 @@ public class ConsentStringParserTest {
 		assertEquals("EN", consent.getConsentLanguage());
 		assertEquals(Instant.ofEpochMilli(14924661858L * 100), consent.getConsentRecordCreated());
 		assertEquals(Instant.ofEpochMilli(15240021858L * 100), consent.getConsentRecordLastUpdated());
-		assertEquals(8, consent.getAlllowedPurposes().size());
+		assertEquals(8, consent.getAllowedPurposes().size());
 		assertTrue(consent.isPurposeAllowed(4));
 		assertFalse(consent.isPurposeAllowed(1));
 		assertTrue(consent.isPurposeAllowed(24));
