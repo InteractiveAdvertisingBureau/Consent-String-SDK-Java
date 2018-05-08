@@ -201,7 +201,7 @@ public class ConsentStringParser {
 	 *
 	 * @return a list of purpose id's which are permitted according to this consent string
 	 */
-	public List<Integer> getAlllowedPurposes() {
+	public List<Integer> getAllowedPurposes() {
 		if (integerPurposes != null) {
 			return integerPurposes;
 		}
