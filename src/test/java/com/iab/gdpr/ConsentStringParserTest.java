@@ -55,9 +55,9 @@ public class ConsentStringParserTest {
 		assertTrue(consent.isVendorAllowed(5000));
 		assertTrue(consent.isVendorAllowed(515));
 		assertFalse(consent.isVendorAllowed(0));
+		assertFalse(consent.isVendorAllowed(411));
 		assertFalse(consent.isVendorAllowed(3244));
 		assertEquals(consentString, consent.getConsentString());
-
 	}
 
 	@Test
