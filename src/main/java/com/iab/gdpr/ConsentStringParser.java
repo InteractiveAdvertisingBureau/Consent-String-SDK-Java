@@ -235,23 +235,9 @@ public class ConsentStringParser {
 	}
 
 	private boolean findVendorIdInRange(int vendorId) {
-		int limit = rangeEntries.size();
-		if (limit == 0) {
-			return false;
-		}
-		int index = limit / 2;
-		while (index >= 0 && index < limit) {
-			RangeEntry entry = rangeEntries.get(index);
+		for (RangeEntry entry : rangeEntries) {
 			if (entry.containsVendorId(vendorId)) {
 				return true;
-			}
-			if (index == 0 || index == limit - 1) {
-				return false;
-			}
-			if (entry.idIsGreaterThanMax(vendorId)) {
-				index = (index + ((limit - index) / 2));
-			} else {
-				index = index / 2;
 			}
 		}
 		return false;
@@ -260,7 +246,7 @@ public class ConsentStringParser {
 	/**
 	 * @return a boolean describing if a vendor has consented to a particular vendor. The lowest vendor ID is 1.
 	 *
-	 *         This method, along with {@link isPurposeAllowed} fully describes the user consent for a particular action
+	 *         This method, along with {@link #isPurposeAllowed(int)} fully describes the user consent for a particular action
 	 *         by a given vendor.
 	 */
 	public boolean isVendorAllowed(int vendorId) {
@@ -277,25 +263,20 @@ public class ConsentStringParser {
 		/**
 		 * This class corresponds to the RangeEntry field given in the consent string specification.
 		 */
-		private final List<Integer> vendorIds = new ArrayList<Integer>();
 		private final int maxVendorId;
 		private final int minVendorId;
 
 		public RangeEntry(int vendorId) {
-			vendorIds.add(vendorId);
 			this.maxVendorId = this.minVendorId = vendorId;
 		}
 
 		public RangeEntry(int startId, int endId) {
 			this.maxVendorId = endId;
 			this.minVendorId = startId;
-			for (; startId <= endId; startId++) {
-				vendorIds.add(startId);
-			}
 		}
 
 		public boolean containsVendorId(int vendorId) {
-			return vendorIds.indexOf(vendorId) >= 0;
+			return vendorId >= minVendorId && vendorId <= maxVendorId;
 		}
 
 		public boolean idIsGreaterThanMax(int vendorId) {
