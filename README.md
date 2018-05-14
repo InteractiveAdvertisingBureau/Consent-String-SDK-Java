@@ -3,8 +3,11 @@ A java implementation of the IAB consent string 1.1 spec.
 
 to test run the following command
 
-```
-gradle test
+```sh
+# on *nix, Mac OS
+./gradlew test 
+# or, on Windows
+.\gradlew.bat test
 ```
 =======
 # Transparency and Consent Framework: Consent-String-SDK-Java
