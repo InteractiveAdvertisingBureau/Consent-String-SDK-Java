@@ -1,12 +1,14 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+
 repositories {
     mavenCentral()
 }
 
- dependencies {
-        testCompile (
+dependencies {
+    testCompile(
             "junit:junit:4.11",
-        )
-    }
+            "org.hamcrest:java-hamcrest:2.0.0.0"
+    )
+}

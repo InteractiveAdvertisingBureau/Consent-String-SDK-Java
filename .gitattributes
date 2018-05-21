@@ -1,0 +1,4 @@
+* text=auto
+*.bat !text
+*.cmd !text
+.gitignore !text
