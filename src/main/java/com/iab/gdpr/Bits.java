@@ -96,7 +96,6 @@ public class Bits {
      */
     public void setInt(int startInclusive, int size, int to) throws VendorConsentException {
         if (size > Integer.SIZE || to > maxOfSize(size) || to < 0) {
-            // TODO check againt the size
             throw new VendorConsentCreateException("can't fit integer into bit range of size" + size);
         }
 
@@ -145,7 +144,6 @@ public class Bits {
      */
     public void setLong(int startInclusive, int size, long to) throws VendorConsentException {
         if (size > Long.SIZE || to > maxOfSize(size) || to < 0) {
-            // TODO check againt the size
             throw new VendorConsentCreateException("can't fit long into bit range of size " + size);
         }
 
@@ -195,7 +193,7 @@ public class Bits {
      */
     public String getSixBitString(int startInclusive, int size) throws VendorConsentException {
         if (size % 6 != 0) {
-            throw new VendorConsentCreateException("string bit length must be multiple of six: " + size);
+            throw new VendorConsentParseException("string bit length must be multiple of six: " + size);
         }
         int charNum = size / 6;
         StringBuilder val = new StringBuilder();

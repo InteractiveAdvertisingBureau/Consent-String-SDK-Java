@@ -10,14 +10,13 @@ import java.util.Objects;
 import java.util.stream.IntStream;
 
 import com.iab.gdpr.exception.GdprException;
+import com.iab.gdpr.exception.VendorConsentCreateException;
 import com.iab.gdpr.exception.VendorConsentException;
 import com.iab.gdpr.exception.VendorConsentParseException;
 import com.iab.gdpr.util.ConsentStringParser;
 
 /**
- * Forked from https://github.com/InteractiveAdvertisingBureau/Consent-String-SDK-Java and modified
- *
- * This class implements a parser for the IAB consent string as specified in
+ * This class implements a builder and a factory method for the IAB consent as specified in
  * https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/
  * Draft_for_Public_Comment_Transparency%20%26%20Consent%20Framework%20-%20cookie%20and%20vendor%20list%20format%
  * 20specification%20v1.0a.pdf
@@ -63,12 +62,18 @@ public class VendorConsent {
 
         if (this.vendorEncodingType == GdprConstants.VENDOR_ENCODING_RANGE) {
             this.defaultConsent = builder.defaultConsent;
+            if (builder.rangeEntries.stream().anyMatch(rangeEntry -> rangeEntry.endVendorId > maxVendorId)) {
+                throw new VendorConsentCreateException("VendorId in range entry is greater than Max VendorId");
+            }
             this.rangeEntries = builder.rangeEntries;
         } else {
             this.bitfield = new ArrayList<>(this.maxVendorId);
             IntStream.range(0, this.maxVendorId).forEach(i -> this.bitfield.add(false));
             for (int vendorId : builder.vendorsBitField) {
-                this.bitfield.set(vendorId - GdprConstants.VENDOR_BITFIELD_OFFSET, true);
+                if (vendorId > maxVendorId || vendorId < 1) {
+                    throw new VendorConsentCreateException("VendorId in bit field is greater than Max VendorId or less than 1");
+                }
+                this.bitfield.set(vendorId - 1, true);
             }
         }
 
@@ -77,7 +82,7 @@ public class VendorConsent {
         if (this.vendorEncodingType == GdprConstants.VENDOR_ENCODING_RANGE) {
             int rangeEntrySize = 0;
             for (RangeEntry entry : rangeEntries) {
-                if (entry.maxVendorId == entry.minVendorId) {
+                if (entry.endVendorId == entry.startVendorId) {
                     rangeEntrySize += GdprConstants.VENDOR_ID_SIZE;
                 } else {
                     rangeEntrySize += GdprConstants.VENDOR_ID_SIZE * 2;
@@ -126,15 +131,15 @@ public class VendorConsent {
             int currentOffset = GdprConstants.RANGE_ENTRY_OFFSET;
 
             for (RangeEntry entry : rangeEntries) {
-                if (entry.maxVendorId > entry.minVendorId) { // range
+                if (entry.endVendorId > entry.startVendorId) { // range
                     bits.setBit(currentOffset++);
-                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.minVendorId);
+                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.startVendorId);
                     currentOffset += GdprConstants.VENDOR_ID_SIZE;
-                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.maxVendorId);
+                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.endVendorId);
                     currentOffset += GdprConstants.VENDOR_ID_SIZE;
                 } else {
                     bits.unsetBit(currentOffset++);
-                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.minVendorId);
+                    bits.setInt(currentOffset, GdprConstants.VENDOR_ID_SIZE, entry.startVendorId);
                     currentOffset += GdprConstants.VENDOR_ID_SIZE;
                 }
             }
@@ -248,6 +253,10 @@ public class VendorConsent {
 
     public List<RangeEntry> getRangeEntries() {
         return rangeEntries;
+    }
+
+    public List<Boolean> getBitfield() {
+        return bitfield;
     }
 
     public String getBinaryString() {
@@ -374,33 +383,33 @@ public class VendorConsent {
         /**
          * This class corresponds to the RangeEntry field given in the consent string specification.
          */
-        private final int maxVendorId;
-        private final int minVendorId;
+        private final int endVendorId;
+        private final int startVendorId;
 
         public RangeEntry(int vendorId) {
-            this.maxVendorId = this.minVendorId = vendorId;
+            this.endVendorId = this.startVendorId = vendorId;
         }
 
         public RangeEntry(int startId, int endId) {
-            this.maxVendorId = endId;
-            this.minVendorId = startId;
+            this.endVendorId = endId;
+            this.startVendorId = startId;
         }
 
         public boolean containsVendorId(int vendorId) {
-            return vendorId >= minVendorId && vendorId <= maxVendorId;
+            return vendorId >= startVendorId && vendorId <= endVendorId;
         }
 
         public boolean idIsGreaterThanMax(int vendorId) {
-            return vendorId > maxVendorId;
+            return vendorId > endVendorId;
         }
 
         public boolean isIsLessThanMin(int vendorId) {
-            return vendorId < minVendorId;
+            return vendorId < startVendorId;
         }
 
         @Override
         public String toString() {
-            return "RangeEntry{" + "maxVendorId=" + maxVendorId + ", minVendorId=" + minVendorId + '}';
+            return "RangeEntry{" + "endVendorId=" + endVendorId + ", startVendorId=" + startVendorId + '}';
         }
     }
 
@@ -423,56 +432,87 @@ public class VendorConsent {
         private boolean defaultConsent;
         private List<Integer> integerPurposes = null;
 
+        /**
+         * @param version
+         *            Version of the Consent String Format
+         */
         public Builder withVersion(int version) {
             this.version = version;
             return this;
         }
 
+        /**
+         * @param consentRecordCreated
+         *            Epoch deciseconds when consent string was first created
+         */
         public Builder withConsentRecordCreatedOn(Instant consentRecordCreated) {
             this.consentRecordCreated = consentRecordCreated;
             return this;
         }
 
+        /**
+         * @param consentRecordLastUpdated
+         *            Epoch deciseconds when consent string was last updated
+         */
         public Builder withConsentRecordLastUpdatedOn(Instant consentRecordLastUpdated) {
             this.consentRecordLastUpdated = consentRecordLastUpdated;
             return this;
         }
 
+        /**
+         * @param cmpID
+         *            Consent Manager Provider ID that last updated the consent string
+         */
         public Builder withCmpID(int cmpID) {
             this.cmpID = cmpID;
             return this;
         }
 
+        /**
+         * @param cmpVersion
+         *            Consent Manager Provider version
+         */
         public Builder withCmpVersion(int cmpVersion) {
             this.cmpVersion = cmpVersion;
             return this;
         }
 
+        /**
+         * @param consentScreenID
+         *            Screen number in the CMP where consent was given
+         */
         public Builder withConsentScreenID(int consentScreenID) {
             this.consentScreenID = consentScreenID;
             return this;
         }
 
+        /**
+         * @param consentLanguage
+         *            Two-letter ISO639-1 language code that CMP asked for consent in. Each letter should be encoded as
+         *            6 bits, A=0..Z=25 . This will result in the base64url-encoded bytes spelling out the language code
+         *            (in uppercase).
+         */
         public Builder withConsentLanguage(String consentLanguage) {
             this.consentLanguage = consentLanguage;
             return this;
         }
 
+        /**
+         * @param vendorListVersion
+         *            Version of vendor list used in most recent consent string update
+         */
         public Builder withVendorListVersion(int vendorListVersion) {
             this.vendorListVersion = vendorListVersion;
             return this;
         }
 
-        public Builder withMaxVendorId(int maxVendorId) {
-            this.maxVendorId = maxVendorId;
-            return this;
-        }
-
-        public Builder withVendorEncodingType(int vendorEncodingType) {
-            this.vendorEncodingType = vendorEncodingType;
-            return this;
-        }
-
+        /**
+         * @param allowedPurposes
+         *            For each Purpose, one bit: 0=No Consent 1=Consent Purposes are listed in the global Vendor List.
+         *            Resultant consent value is the ?AND? of the applicable bit(s) from this field and a vendor?s
+         *            specific consent bit. Purpose #1 maps to the first (most significant) bit, purpose #24 maps to the
+         *            last (least significant) bit.
+         */
         public Builder withAllowedPurposes(List<Integer> allowedPurposes) {
             this.integerPurposes = allowedPurposes;
             for (int i = 0; i < GdprConstants.PURPOSES_SIZE; i++) {
@@ -484,16 +524,46 @@ public class VendorConsent {
             return this;
         }
 
-        public Builder withBitField(List<Integer> vendorsInBitField) {
-            this.vendorsBitField = vendorsInBitField;
+        /**
+         * @param maxVendorId
+         *            The maximum VendorId for which consent values are given.
+         */
+        public Builder withMaxVendorId(int maxVendorId) {
+            this.maxVendorId = maxVendorId;
             return this;
         }
 
+        /**
+         * @param vendorEncodingType
+         *            0=BitField 1=Range
+         */
+        public Builder withVendorEncodingType(int vendorEncodingType) {
+            this.vendorEncodingType = vendorEncodingType;
+            return this;
+        }
+
+        /**
+         * @param bitFieldEntries
+         *            List of VendorIds for which the vendors have consent
+         */
+        public Builder withBitField(List<Integer> bitFieldEntries) {
+            this.vendorsBitField = bitFieldEntries;
+            return this;
+        }
+
+        /**
+         * @param rangeEntries
+         *            List of VendorIds or a range of VendorIds for which the vendors have consent
+         */
         public Builder withRangeEntries(List<RangeEntry> rangeEntries) {
             this.rangeEntries = rangeEntries;
             return this;
         }
 
+        /**
+         * @param defaultConsent
+         *            Default consent for VendorIds not covered by a RangeEntry. 0=No Consent 1=Consent
+         */
         public Builder withDefaultConsent(boolean defaultConsent) {
             this.defaultConsent = defaultConsent;
             return this;
