@@ -15,6 +15,9 @@ import com.iab.gdpr.exception.VendorConsentException;
 import com.iab.gdpr.exception.VendorConsentParseException;
 import com.iab.gdpr.util.ConsentStringParser;
 
+import static com.iab.gdpr.GdprConstants.PURPOSES_OFFSET;
+import static com.iab.gdpr.GdprConstants.PURPOSES_SIZE;
+
 /**
  * This class implements a builder and a factory method for the IAB consent as specified in
  * https://github.com/InteractiveAdvertisingBureau/GDPR-Transparency-and-Consent-Framework/blob/master/
@@ -111,9 +114,9 @@ public class VendorConsent {
         int i = 0;
         for (boolean purpose : allowedPurposes) {
             if (purpose) {
-                bits.setBit(GdprConstants.PURPOSES_OFFSET + i++);
+                bits.setBit(PURPOSES_OFFSET + i++);
             } else {
-                bits.unsetBit(GdprConstants.PURPOSES_OFFSET + i++);
+                bits.unsetBit(PURPOSES_OFFSET + i++);
             }
         }
 
@@ -284,6 +287,14 @@ public class VendorConsent {
 
     /**
      *
+     * @return an integer equivalent of allowed purpose id bits according to this consent string
+     */
+    public int getAllowedPurposesBits() {
+        return bits.getInt(PURPOSES_OFFSET, PURPOSES_SIZE);
+    }
+
+    /**
+     *
      * @return the vendor list version which was used in creating this consent string
      */
     public int getVendorListVersion() {
@@ -424,7 +435,7 @@ public class VendorConsent {
         private int vendorListVersion;
         private int maxVendorId;
         private int vendorEncodingType;
-        private List<Boolean> allowedPurposes = new ArrayList<>(GdprConstants.PURPOSES_SIZE);
+        private List<Boolean> allowedPurposes = new ArrayList<>(PURPOSES_SIZE);
         // only used when bitfield is enabled
         private List<Integer> vendorsBitField;
         // only used when range entry is enabled
@@ -515,7 +526,7 @@ public class VendorConsent {
          */
         public Builder withAllowedPurposes(List<Integer> allowedPurposes) {
             this.integerPurposes = allowedPurposes;
-            for (int i = 0; i < GdprConstants.PURPOSES_SIZE; i++) {
+            for (int i = 0; i < PURPOSES_SIZE; i++) {
                 this.allowedPurposes.add(false);
             }
             for (int purpose : allowedPurposes) {
