@@ -80,7 +80,7 @@ public class VendorConsent {
         this.integerPurposes = builder.integerPurposes;
 
         if (this.vendorEncodingType == GdprConstants.VENDOR_ENCODING_RANGE) {
-            int rangeEntrySize = 0;
+            int rangeEntrySize = rangeEntries.size(); // one bit SingleOrRange flag per entry
             for (RangeEntry entry : rangeEntries) {
                 if (entry.endVendorId == entry.startVendorId) {
                     rangeEntrySize += GdprConstants.VENDOR_ID_SIZE;

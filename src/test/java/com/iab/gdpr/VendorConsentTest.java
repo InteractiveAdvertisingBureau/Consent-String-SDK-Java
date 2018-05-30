@@ -177,4 +177,30 @@ public class VendorConsentTest {
         assertFalse(consent.isVendorAllowed(3));
         assertTrue(consent.isVendorAllowed(27));
     }
+    
+    @Test
+    public void testLongRangeEntry() {
+        String consentString = "BOOMzbgOOQww_AtABAFRAb-AAAsvOA3gACAAkABgArgBaAF0AMAA1gBuAH8AQQBSgCoAL8AYQBigDIAM0AaABpgDYAOYAdgA8AB6gD4AQoAiABFQCMAI6ASABIgCTAEqAJeATIBQQCiAKSAU4BVQCtAK-AWYBaQC2ALcAXMAvAC-gGAAYcAxQDGAGQAMsAZsA0ADTAGqANcAbMA4ADjAHKAOiAdQB1gDtgHgAeMA9AD2AHzAP4BAACBAEEAIbAREBEgCKQEXARhZeYA";
+        VendorConsent consent = VendorConsent.fromBase64String(consentString);
+        assertThat(consent.getCmpId(), Matchers.is(45));
+        assertThat(consent.getCmpVersion(), Matchers.is(1));
+        assertThat(consent.getConsentLanguage(), Matchers.is("FR"));
+        assertThat(consent.getConsentRecordCreated(), Matchers.is(Instant.ofEpochMilli(15270622944L * 100)));
+        assertThat(consent.getConsentRecordLastUpdated(), Matchers.is(Instant.ofEpochMilli(15271660607L * 100)));
+        assertThat(consent.getAllowedPurposes().size(), Matchers.is(5));    assertTrue(consent.isPurposeAllowed(1));
+        assertTrue(consent.isPurposeAllowed(2));
+        assertTrue(consent.isPurposeAllowed(3));
+        assertTrue(consent.isPurposeAllowed(4));
+        assertTrue(consent.isPurposeAllowed(5));
+        assertFalse(consent.isPurposeAllowed(6));
+        assertFalse(consent.isPurposeAllowed(25));
+        assertFalse(consent.isPurposeAllowed(0));
+        assertTrue(consent.isVendorAllowed(1));
+        assertFalse(consent.isVendorAllowed(5));
+        assertTrue(consent.isVendorAllowed(45));
+        assertFalse(consent.isVendorAllowed(47));
+        assertFalse(consent.isVendorAllowed(146));
+        assertTrue(consent.isVendorAllowed(147));
+        assertThat(consent.getConsentString(), Matchers.is(consentString));
+    }    
 }
