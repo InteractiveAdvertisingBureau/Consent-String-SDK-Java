@@ -5,6 +5,8 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.iab.gdpr.VendorConsent;
 import org.hamcrest.Matchers;
@@ -13,6 +15,48 @@ import org.junit.Test;
 import com.iab.gdpr.exception.VendorConsentException;
 
 public class VendorConsentTest {
+	
+	@Test
+	public void testWithBitSizeMultipleOfEight() {
+	    String consentString = "BOOlLqOOOlLqTABABAENAk-AAAAXx7_______9______9uz_Gv_r_f__3nW8_39P3g_7_O3_7m_-zzV48_lrQV1yPAUCgA";
+	    VendorConsent vendorConsent = VendorConsent.fromBase64String(consentString);
+	    assertTrue(vendorConsent.getMaxVendorId() == 380);
+	    assertTrue(vendorConsent.getBitfield().size() == 380);
+	    assertTrue(vendorConsent.isVendorAllowed(380));
+	    assertFalse(vendorConsent.isVendorAllowed(379));
+	    
+	    // test creation of vendor string
+        VendorConsent consent = VendorConsent.fromBase64String(consentString);
+
+        VendorConsent.Builder builder = new VendorConsent.Builder();
+        builder.withVersion(consent.getVersion());
+        builder.withConsentRecordCreatedOn(consent.getConsentRecordCreated());
+        builder.withConsentRecordLastUpdatedOn(consent.getConsentRecordLastUpdated());
+
+        builder.withCmpID(consent.getCmpId());
+        builder.withCmpVersion(consent.getCmpVersion());
+        builder.withConsentScreenID(consent.getConsentScreen());
+        builder.withConsentLanguage(consent.getConsentLanguage());
+        builder.withVendorListVersion(consent.getVendorListVersion());
+        builder.withAllowedPurposes(consent.getAllowedPurposes());
+
+        builder.withMaxVendorId(consent.getMaxVendorId());
+        builder.withVendorEncodingType(consent.getVendorEncodingType());
+        List<Integer> vendorConsetBit = new ArrayList<>(consent.getMaxVendorId());
+        for(int v = 1; v <= consent.getMaxVendorId(); v++) {
+            if(consent.isVendorAllowed(v)) {
+                vendorConsetBit.add(v);
+            }
+        }
+        builder.withBitField(vendorConsetBit);
+        builder.withDefaultConsent(consent.isDefaultConsent());
+        builder.withRangeEntries(consent.getRangeEntries());
+
+        VendorConsent underTest = builder.build();
+
+        assertThat(underTest.getConsentString(), Matchers.is(consentString));	    
+	}
+	
     @Test
     public void testBitField() {
         String consentString = "BN5lERiOMYEdiAOAWeFRAAYAAaAAptQ";
