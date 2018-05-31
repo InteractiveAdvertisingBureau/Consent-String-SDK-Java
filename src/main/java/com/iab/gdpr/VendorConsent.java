@@ -92,7 +92,7 @@ public class VendorConsent {
             boolean bitsFit = (bitSize % 8) == 0;
             this.bits = new Bits(new byte[bitSize / 8 + (bitsFit ? 0 : 1)]);
         } else {
-            int bitSize = GdprConstants.VENDOR_BITFIELD_OFFSET + this.maxVendorId - 1;
+            int bitSize = GdprConstants.VENDOR_BITFIELD_OFFSET + this.maxVendorId;
             boolean bitsFit = (bitSize % 8) == 0;
             this.bits = new Bits(new byte[(bitSize / 8 + (bitsFit ? 0 : 1))]);
         }
