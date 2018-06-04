@@ -4,7 +4,16 @@ apply plugin: 'idea'
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
+
+group = 'com.iab.gdpr'
+version = '2.0.0-SNAPSHOT'
+
+description = """A Java implementation of the IAB Consent String spec."""
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
     testCompile(
