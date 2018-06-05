@@ -1,5 +1,6 @@
 package com.iab.gdpr.consent.implementation.v1;
 
+import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.VendorConsent;
 import com.iab.gdpr.consent.VendorConsentDecoder;
 import com.iab.gdpr.exception.VendorConsentParseException;
@@ -9,9 +10,11 @@ import org.junit.Test;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
 
+import static com.iab.gdpr.Purpose.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
@@ -166,13 +169,19 @@ public class ByteBufferBackedVendorConsentTest {
         ByteBufferBackedVendorConsent vendorConsent = new ByteBufferBackedVendorConsent(Utils.fromBinaryString(binaryString));
 
         // Then: correct allowed versions are returned
-        assertThat(vendorConsent.getAllowedPurposes(),is(new HashSet<>(Arrays.asList(1,2,3,4,5,15,24))));
+        assertThat(vendorConsent.getAllowedPurposeIds(),is(new HashSet<>(Arrays.asList(1,2,3,4,5,15,24))));
+        assertThat(vendorConsent.getAllowedPurposes(),is(new HashSet<>(Arrays.asList(STORAGE_AND_ACCESS,PERSONALIZATION,AD_SELECTION,CONTENT_DELIVERY,MEASUREMENT,UNDEFINED))));
         assertThat(vendorConsent.getAllowedPurposesBits(),is(16253441));
         assertTrue(vendorConsent.isPurposeAllowed(1));
+        assertTrue(vendorConsent.isPurposeAllowed(STORAGE_AND_ACCESS));
         assertTrue(vendorConsent.isPurposeAllowed(2));
+        assertTrue(vendorConsent.isPurposeAllowed(PERSONALIZATION));
         assertTrue(vendorConsent.isPurposeAllowed(3));
+        assertTrue(vendorConsent.isPurposeAllowed(AD_SELECTION));
         assertTrue(vendorConsent.isPurposeAllowed(4));
+        assertTrue(vendorConsent.isPurposeAllowed(CONTENT_DELIVERY));
         assertTrue(vendorConsent.isPurposeAllowed(5));
+        assertTrue(vendorConsent.isPurposeAllowed(MEASUREMENT));
         assertTrue(vendorConsent.isPurposeAllowed(15));
         assertTrue(vendorConsent.isPurposeAllowed(24));
     }
@@ -403,7 +412,7 @@ public class ByteBufferBackedVendorConsentTest {
         assertThat(vendorConsent.getConsentLanguage(), is("FR"));
         assertThat(vendorConsent.getConsentRecordCreated(), is(Instant.ofEpochMilli(14924661858L * 100)));
         assertThat(vendorConsent.getConsentRecordLastUpdated(), is(Instant.ofEpochMilli(15240021858L * 100)));
-        assertThat(vendorConsent.getAllowedPurposes().size(), is(5));
+        assertThat(vendorConsent.getAllowedPurposeIds().size(), is(5));
         assertThat(vendorConsent.getAllowedPurposesBits(), is(6291482));
 
         assertTrue(vendorConsent.isPurposeAllowed(2));
@@ -431,7 +440,7 @@ public class ByteBufferBackedVendorConsentTest {
         assertThat(vendorConsent.getConsentLanguage(), is("EN"));
         assertThat(vendorConsent.getConsentRecordCreated(), is(Instant.ofEpochMilli(14924661858L * 100)));
         assertThat(vendorConsent.getConsentRecordLastUpdated(), is(Instant.ofEpochMilli(15240021858L * 100)));
-        assertThat(vendorConsent.getAllowedPurposes().size(), is(8));
+        assertThat(vendorConsent.getAllowedPurposeIds().size(), is(8));
         assertThat(vendorConsent.getAllowedPurposesBits(), is(2000001));
 
         assertTrue(vendorConsent.isPurposeAllowed(4));
@@ -463,7 +472,7 @@ public class ByteBufferBackedVendorConsentTest {
         assertThat(vendorConsent.getConsentLanguage(), is("FR"));
         assertThat(vendorConsent.getConsentRecordCreated(), is(Instant.ofEpochMilli(15270622944L * 100)));
         assertThat(vendorConsent.getConsentRecordLastUpdated(), is(Instant.ofEpochMilli(15271660607L * 100)));
-        assertThat(vendorConsent.getAllowedPurposes().size(), is(5));
+        assertThat(vendorConsent.getAllowedPurposeIds().size(), is(5));
 
         assertTrue(vendorConsent.isPurposeAllowed(1));
         assertTrue(vendorConsent.isPurposeAllowed(2));
@@ -496,6 +505,47 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(1));
         assertFalse(vendorConsent.isVendorAllowed(3));
         assertTrue(vendorConsent.isVendorAllowed(27));
+    }
+
+    @Test
+    public void testRealString6() {
+        // Given: known vendor consent string
+        final String consentString = "BOOj_adOOj_adABABADEAb-AAAA-iATAAUAA2ADAAMgAgABIAC0AGQANAAcAA-ACKAEwAKIAaABFACQAHIAP0B9A";
+
+        // When: vendor vendorConsent is constructed
+        final VendorConsent vendorConsent = VendorConsentDecoder.fromBase64String(consentString);
+
+        // Then: values match expectation
+        assertThat(vendorConsent.getVersion(),is(1));
+        final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+        assertThat(vendorConsent.getConsentRecordCreated(),is(LocalDateTime.parse("2018-05-30 08:48:54.100",formatter).toInstant(ZoneOffset.UTC)));
+        assertThat(vendorConsent.getConsentRecordLastUpdated(),is(LocalDateTime.parse("2018-05-30 08:48:54.100",formatter).toInstant(ZoneOffset.UTC)));
+        assertThat(vendorConsent.getCmpId(),is(1));
+        assertThat(vendorConsent.getCmpVersion(),is(1));
+        assertThat(vendorConsent.getConsentScreen(),is(0));
+        assertThat(vendorConsent.getConsentLanguage(),is("DE"));
+        assertThat(vendorConsent.getAllowedPurposeIds(),is(new HashSet<>(Arrays.asList(1,2,3,4,5))));
+        assertThat(vendorConsent.getMaxVendorId(),is(1000));
+        assertTrue(vendorConsent.isVendorAllowed(10));
+        assertTrue(vendorConsent.isVendorAllowed(13));
+        assertTrue(vendorConsent.isVendorAllowed(24));
+        assertTrue(vendorConsent.isVendorAllowed(25));
+        assertTrue(vendorConsent.isVendorAllowed(32));
+        assertTrue(vendorConsent.isVendorAllowed(36));
+        assertTrue(vendorConsent.isVendorAllowed(45));
+        assertTrue(vendorConsent.isVendorAllowed(50));
+        assertTrue(vendorConsent.isVendorAllowed(52));
+        assertTrue(vendorConsent.isVendorAllowed(56));
+        assertTrue(vendorConsent.isVendorAllowed(62));
+        assertTrue(vendorConsent.isVendorAllowed(69));
+        assertTrue(vendorConsent.isVendorAllowed(76));
+        assertTrue(vendorConsent.isVendorAllowed(81));
+        assertTrue(vendorConsent.isVendorAllowed(104));
+        assertTrue(vendorConsent.isVendorAllowed(138));
+        assertTrue(vendorConsent.isVendorAllowed(144));
+        assertTrue(vendorConsent.isVendorAllowed(228));
+        assertTrue(vendorConsent.isVendorAllowed(253));
+        assertTrue(vendorConsent.isVendorAllowed(1000));
     }
 
 }

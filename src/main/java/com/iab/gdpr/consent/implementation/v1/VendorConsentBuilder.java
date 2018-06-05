@@ -2,11 +2,13 @@ package com.iab.gdpr.consent.implementation.v1;
 
 import com.iab.gdpr.Bits;
 import com.iab.gdpr.GdprConstants;
+import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.range.RangeEntry;
 import com.iab.gdpr.consent.VendorConsent;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.iab.gdpr.GdprConstants.*;
 
@@ -102,17 +104,30 @@ public class VendorConsentBuilder {
     }
 
     /**
-     * With allowed puposes
+     * With allowed purpose IDs
+     * @param allowedPurposeIds set of allowed purposes
+     * @return builder
+     */
+    public VendorConsentBuilder withAllowedPurposeIds(Set<Integer> allowedPurposeIds) {
+        // Validate
+        Objects.requireNonNull(allowedPurposeIds, "Argument allowedPurposeIds is null");
+        final boolean invalidPurposeIdFound = allowedPurposeIds.stream().anyMatch(purposeId -> purposeId < 0 || purposeId > PURPOSES_SIZE);
+        if (invalidPurposeIdFound) throw new IllegalArgumentException("Invalid purpose ID found");
+
+        this.allowedPurposes = allowedPurposeIds;
+        return this;
+    }
+
+    /**
+     * With allowed purposes
      * @param allowedPurposes set of allowed purposes
      * @return builder
      */
-    public VendorConsentBuilder withAllowedPurposes(Set<Integer> allowedPurposes) {
+    public VendorConsentBuilder withAllowedPurposes(Set<Purpose> allowedPurposes) {
         // Validate
         Objects.requireNonNull(allowedPurposes, "Argument allowedPurposes is null");
-        final boolean invalidPurposeIdFound = allowedPurposes.stream().anyMatch(purposeId -> purposeId < 0 || purposeId > PURPOSES_SIZE);
-        if (invalidPurposeIdFound) throw new IllegalArgumentException("Invalid purpose ID found");
 
-        this.allowedPurposes = allowedPurposes;
+        this.allowedPurposes = allowedPurposes.stream().map(Purpose::getId).collect(Collectors.toSet());
         return this;
     }
 

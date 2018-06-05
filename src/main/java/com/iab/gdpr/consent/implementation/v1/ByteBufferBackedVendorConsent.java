@@ -2,6 +2,7 @@ package com.iab.gdpr.consent.implementation.v1;
 
 
 import com.iab.gdpr.Bits;
+import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.VendorConsent;
 import com.iab.gdpr.exception.VendorConsentParseException;
 
@@ -9,6 +10,7 @@ import java.time.Instant;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.iab.gdpr.GdprConstants.*;
 
@@ -71,7 +73,7 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
     }
 
     @Override
-    public Set<Integer> getAllowedPurposes() {
+    public Set<Integer> getAllowedPurposeIds() {
         final Set<Integer> allowedPurposes = new HashSet<>();
         for (int i = PURPOSES_OFFSET; i < PURPOSES_OFFSET + PURPOSES_SIZE; i++) {
             if (bits.getBit(i)) {
@@ -79,6 +81,11 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
             }
         }
         return allowedPurposes;
+    }
+
+    @Override
+    public Set<Purpose> getAllowedPurposes() {
+        return getAllowedPurposeIds().stream().map(Purpose::valueOf).collect(Collectors.toSet());
     }
 
     @Override
@@ -94,7 +101,12 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
     @Override
     public boolean isPurposeAllowed(int purposeId) {
         if (purposeId < 1) return false;
-        return getAllowedPurposes().contains(purposeId);
+        return getAllowedPurposeIds().contains(purposeId);
+    }
+
+    @Override
+    public boolean isPurposeAllowed(Purpose purpose) {
+        return isPurposeAllowed(purpose.getId());
     }
 
     @Override
@@ -189,7 +201,7 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
                 ",ConsentScreen=" + getConsentScreen() +
                 ",ConsentLanguage=" + getConsentLanguage() +
                 ",VendorListVersion=" + getVendorListVersion() +
-                ",PurposesAllowed=" + getAllowedPurposes() +
+                ",PurposesAllowed=" + getAllowedPurposeIds() +
                 ",MaxVendorId=" + getMaxVendorId() +
                 ",EncodingType=" + encodingType() +
                 "}";

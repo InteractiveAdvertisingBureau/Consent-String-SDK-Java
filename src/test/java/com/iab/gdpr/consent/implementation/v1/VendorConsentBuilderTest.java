@@ -1,5 +1,6 @@
 package com.iab.gdpr.consent.implementation.v1;
 
+import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.range.RangeEntry;
 import com.iab.gdpr.consent.range.SingleRangeEntry;
 import com.iab.gdpr.consent.range.StartEndRangeEntry;
@@ -15,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.iab.gdpr.Purpose.*;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
@@ -35,7 +37,7 @@ public class VendorConsentBuilderTest {
         final Set<Integer> allowedPurposes = new HashSet<>(Arrays.asList(1, 2, 3, 99));
 
         // When: passing set to the builder
-        new VendorConsentBuilder().withAllowedPurposes(allowedPurposes);
+        new VendorConsentBuilder().withAllowedPurposeIds(allowedPurposes);
 
         // Then: exception is thrown
     }
@@ -131,7 +133,7 @@ public class VendorConsentBuilderTest {
                 .withConsentScreenID(consentScreenID)
                 .withConsentLanguage(consentLanguage)
                 .withVendorListVersion(vendorListVersion)
-                .withAllowedPurposes(allowedPurposes)
+                .withAllowedPurposeIds(allowedPurposes)
                 .withMaxVendorId(maxVendorId)
                 .withVendorEncodingType(vendorEncodingType)
                 .withBitField(allowedVendors)
@@ -146,7 +148,7 @@ public class VendorConsentBuilderTest {
         assertThat(vendorConsent.getCmpVersion(),is(cmpVersion));
         assertThat(vendorConsent.getConsentScreen(),is(consentScreenID));
         assertThat(vendorConsent.getVendorListVersion(),is(vendorListVersion));
-        assertThat(vendorConsent.getAllowedPurposes(),is(allowedPurposes));
+        assertThat(vendorConsent.getAllowedPurposeIds(),is(allowedPurposes));
         assertThat(vendorConsent.getMaxVendorId(),is(maxVendorId));
 
         assertTrue(vendorConsent.isPurposeAllowed(1));
@@ -169,7 +171,7 @@ public class VendorConsentBuilderTest {
     @Test
     public void testValidRangedEncoding() {
         // Given: set of consent string parameters
-        final Set<Integer> allowedPurposes = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5));
+        final Set<Purpose> allowedPurposes = new HashSet<>(Arrays.asList(STORAGE_AND_ACCESS, PERSONALIZATION, AD_SELECTION, CONTENT_DELIVERY, MEASUREMENT));
         final int cmpId = 10;
         final int cmpVersion = 3;
         final int consentScreenID = 4;
@@ -211,11 +213,11 @@ public class VendorConsentBuilderTest {
         assertThat(vendorConsent.getAllowedPurposes(),is(allowedPurposes));
         assertThat(vendorConsent.getMaxVendorId(),is(maxVendorId));
 
-        assertTrue(vendorConsent.isPurposeAllowed(1));
-        assertTrue(vendorConsent.isPurposeAllowed(2));
-        assertTrue(vendorConsent.isPurposeAllowed(3));
-        assertTrue(vendorConsent.isPurposeAllowed(4));
-        assertTrue(vendorConsent.isPurposeAllowed(5));
+        assertTrue(vendorConsent.isPurposeAllowed(STORAGE_AND_ACCESS));
+        assertTrue(vendorConsent.isPurposeAllowed(PERSONALIZATION));
+        assertTrue(vendorConsent.isPurposeAllowed(AD_SELECTION));
+        assertTrue(vendorConsent.isPurposeAllowed(CONTENT_DELIVERY));
+        assertTrue(vendorConsent.isPurposeAllowed(MEASUREMENT));
 
         assertTrue(vendorConsent.isVendorAllowed(10));
         assertTrue(vendorConsent.isVendorAllowed(150));

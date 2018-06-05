@@ -43,6 +43,7 @@ import com.iab.gdpr.exception.VendorConsentParseException;
  * Draft_for_Public_Comment_Transparency%20%26%20Consent%20Framework%20-%20cookie%20and%20vendor%20list%20format%
  * 20specification%20v1.0a.pdf
  */
+@Deprecated
 public class ConsentStringParser {
     private Bits bits;
 

@@ -1,5 +1,7 @@
 package com.iab.gdpr.consent;
 
+import com.iab.gdpr.Purpose;
+
 import java.time.Instant;
 import java.util.Set;
 
@@ -63,7 +65,13 @@ public interface VendorConsent {
      *
      * @return the set of purpose id's which are permitted according to this consent string
      */
-    Set<Integer> getAllowedPurposes();
+    Set<Integer> getAllowedPurposeIds();
+
+    /**
+     *
+     * @return the set of allowed purposes which are permitted according to this consent string
+     */
+    Set<Purpose> getAllowedPurposes();
 
     /**
      *
@@ -83,6 +91,13 @@ public interface VendorConsent {
      * @return true if purpose is allowed in this consent, false otherwise
      */
     boolean isPurposeAllowed(int purposeId);
+
+    /**
+     * Check whether specified purpose is allowed
+     * @param purpose purpose to check
+     * @return true if purpose is allowed in this consent, false otherwise
+     */
+    boolean isPurposeAllowed(Purpose purpose);
 
     /**
      * Check whether vendor with specified ID is allowd
