@@ -25,6 +25,7 @@ import static com.iab.gdpr.GdprConstants.PURPOSES_SIZE;
  * 20specification%20v1.0a.pdf
  *
  */
+@Deprecated
 public class VendorConsent {
     private static Decoder decoder = Base64.getUrlDecoder();
     // As per the GDPR framework guidelines padding should be ommitted
