@@ -1,1 +1,6 @@
 rootProject.name = 'consent-string-sdk-java'
+
+// Maven deployment properties. Set actual values in $HOME/.gradle/settings.gradle
+
+mavenUsername = ''
+mavenPassword = ''

@@ -5,6 +5,7 @@ import com.iab.gdpr.GdprConstants;
 import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.range.RangeEntry;
 import com.iab.gdpr.consent.VendorConsent;
+import com.iab.gdpr.exception.VendorConsentCreateException;
 
 import java.time.Instant;
 import java.util.*;
@@ -195,16 +196,16 @@ public class VendorConsentBuilder {
         Objects.requireNonNull(consentLanguage, "consentLanguage must be set");
 
         if (vendorListVersion <=0 )
-            throw new IllegalStateException("Invalid value for vendorListVersion:" + vendorListVersion);
+            throw new VendorConsentCreateException("Invalid value for vendorListVersion:" + vendorListVersion);
 
         if (maxVendorId <=0 )
-            throw new IllegalStateException("Invalid value for maxVendorId:" + maxVendorId);
+            throw new VendorConsentCreateException("Invalid value for maxVendorId:" + maxVendorId);
 
         // For range encoding, check if each range entry is valid
         if (vendorEncodingType == VENDOR_ENCODING_RANGE) {
             Objects.requireNonNull(rangeEntries, "Range entries must be set");
             final boolean invalidRangeEntriesFound = rangeEntries.stream().anyMatch(rangeEntry -> !rangeEntry.valid(maxVendorId));
-            if (invalidRangeEntriesFound) throw new IllegalStateException("Invalid range entries found");
+            if (invalidRangeEntriesFound) throw new VendorConsentCreateException("Invalid range entries found");
         }
 
         // Calculate size of bit buffer in bits

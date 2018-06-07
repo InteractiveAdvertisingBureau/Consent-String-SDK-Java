@@ -24,6 +24,11 @@ import static com.iab.gdpr.GdprConstants.PURPOSES_SIZE;
  * Draft_for_Public_Comment_Transparency%20%26%20Consent%20Framework%20-%20cookie%20and%20vendor%20list%20format%
  * 20specification%20v1.0a.pdf
  *
+ * @deprecated This is deprecated and will be removed in future versions
+ *   Use {@link com.iab.gdpr.consent.VendorConsentDecoder} to decode vendor consent string
+ *   Use {@link com.iab.gdpr.consent.implementation.v1.VendorConsentBuilder} to build version 1 consent string
+ *   Use {@link com.iab.gdpr.consent.VendorConsentEncoder} to encode vendor consent to string
+ *
  */
 @Deprecated
 public class VendorConsent {
