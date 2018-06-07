@@ -1,16 +1,18 @@
 apply plugin: 'java'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
 
 repositories {
     mavenCentral()
     mavenLocal()
 }
 
-group = 'com.iab.gdpr'
-version = '2.0.0-SNAPSHOT'
+group = 'com.conversantmedia.gdpr'
+version = '2.0.0'
 
-description = """A Java implementation of the IAB Consent String spec."""
+description = 'A Java implementation of the IAB Consent String spec.'
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
@@ -20,4 +22,76 @@ dependencies {
             "junit:junit:4.11",
             "org.hamcrest:java-hamcrest:2.0.0.0"
     )
+}
+
+task sourceJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allJava
+}
+
+task packageJavadoc(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+javadoc {
+    source = sourceSets.main.allJava
+    classpath = configurations.compileClasspath
+
+    options
+            {
+                setMemberLevel JavadocMemberLevel.PUBLIC
+                setAuthor true
+
+                links "https://docs.oracle.com/javase/8/docs/api/"
+            }
+}
+
+publishing {
+
+    repositories {
+        maven {
+            name = 'OSS Nexus Staging'
+            url = "https://oss.sonatype.org/service/local/staging/deploy/maven2"
+            credentials  {
+                username = mavenUsername
+                password = mavenPassword
+            }
+        }
+    }
+
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+
+            artifact sourceJar
+            artifact packageJavadoc
+
+            pom {
+                name = 'Consent-String-SDK-Java'
+                description = 'A Java implementation of the IAB Consent String spec'
+                url = 'https://github.com/InteractiveAdvertisingBureau/Consent-String-SDK-Java'
+                licenses {
+                    license {
+                        name = 'MIT'
+                        url = 'https://opensource.org/licenses/MIT'
+                    }
+                }
+                developers {
+                    developer {
+                        id = 'IAB'
+                        name = 'IAB'
+                        email = 'about@iab.com'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/InteractiveAdvertisingBureau/Consent-String-SDK-Java'
+                }
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
 }

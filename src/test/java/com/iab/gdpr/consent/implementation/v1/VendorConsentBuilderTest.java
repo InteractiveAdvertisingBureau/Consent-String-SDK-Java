@@ -5,6 +5,7 @@ import com.iab.gdpr.consent.range.RangeEntry;
 import com.iab.gdpr.consent.range.SingleRangeEntry;
 import com.iab.gdpr.consent.range.StartEndRangeEntry;
 import com.iab.gdpr.consent.VendorConsent;
+import com.iab.gdpr.exception.VendorConsentCreateException;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -53,7 +54,7 @@ public class VendorConsentBuilderTest {
         // Then: exception is thrown
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = VendorConsentCreateException.class)
     public void testInvalidVendorListVersion() {
         // Given: invalid vendor list version - 50
         int vendorListVersion = -50;
@@ -69,7 +70,7 @@ public class VendorConsentBuilderTest {
         // Then: exception is thrown
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = VendorConsentCreateException.class)
     public void testInvalidMaxVendorId() {
         // Given: invalid max vendor ID = -1
         int maxVendorId = -1;
@@ -86,7 +87,7 @@ public class VendorConsentBuilderTest {
         // Then: exception is thrown
     }
 
-    @Test(expected = IllegalStateException.class)
+    @Test(expected = VendorConsentCreateException.class)
     public void testInvalidRangeEntry() {
         // Given: max vendor ID of 300;
         int maxVendorId = 300;
@@ -178,7 +179,7 @@ public class VendorConsentBuilderTest {
         final String consentLanguage = "FR";
         final int vendorListVersion = 231;
         final int maxVendorId = 400;
-        final int vendorEncodingType = 1; // Bit field
+        final int vendorEncodingType = 1;
         final List<RangeEntry> rangeEntries = Arrays.asList(
                 new SingleRangeEntry(10),
                 new StartEndRangeEntry(100,200),
