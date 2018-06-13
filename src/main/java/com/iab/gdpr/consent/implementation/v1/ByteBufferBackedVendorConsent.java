@@ -100,8 +100,8 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
 
     @Override
     public boolean isPurposeAllowed(int purposeId) {
-        if (purposeId < 1) return false;
-        return getAllowedPurposeIds().contains(purposeId);
+        if (purposeId < 1 || purposeId > PURPOSES_SIZE) return false;
+        return bits.getBit(PURPOSES_OFFSET + purposeId - 1);
     }
 
     @Override
