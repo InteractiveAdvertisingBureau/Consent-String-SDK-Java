@@ -1,3 +1,4 @@
+![GitHub release](https://img.shields.io/github/release/InteractiveAdvertisingBureau/Consent-String-SDK-Java.svg)
 
 # Transparency and Consent Framework: Consent-String-SDK-Java
 
