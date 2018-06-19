@@ -10,7 +10,7 @@ repositories {
 }
 
 group = 'com.conversantmedia.gdpr'
-version = '2.0.1'
+version = '2.0.2'
 
 description = 'A Java implementation of the IAB Consent String spec.'
 
