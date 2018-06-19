@@ -20,7 +20,14 @@ public class VendorConsentDecoder {
         if (isNullOrEmpty(consentString))
             throw new IllegalArgumentException("Null or empty consent string passed as an argument");
 
-        final Bits bits = new Bits(BASE64_DECODER.decode(consentString));
+        return fromByteArray(BASE64_DECODER.decode(consentString));
+    }
+
+    public static VendorConsent fromByteArray(byte[] bytes) {
+        if (bytes == null || bytes.length == 0)
+            throw new IllegalArgumentException("Null or empty consent bytes passed as an argument");
+
+        final Bits bits = new Bits(bytes);
         final int version = getVersion(bits);
         switch (version) {
             case 1:

@@ -25,12 +25,35 @@ public class VendorConsentDecoderTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
+    public void testNullConsentBytes() {
+        // Given: null consent string
+        byte[] consentBytes = null;
+
+        // When: decoder is called
+        final VendorConsent vendorConsent = VendorConsentDecoder.fromByteArray(consentBytes);
+
+        // Then IllegalArgumentException exception is thrown
+    }
+
+    @Test(expected = IllegalArgumentException.class)
     public void testEmptyConsentString() {
         // Given: empty consent string
         String consentString = "";
 
         // When: decoder is called
         final VendorConsent vendorConsent = VendorConsentDecoder.fromBase64String(consentString);
+
+        // Then IllegalArgumentException exception is thrown
+
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testEmptyConsentBytes() {
+        // Given: empty consent string
+        byte[] consentBytes = new byte[0];
+
+        // When: decoder is called
+        final VendorConsent vendorConsent = VendorConsentDecoder.fromByteArray(consentBytes);
 
         // Then IllegalArgumentException exception is thrown
 
