@@ -237,6 +237,14 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(3));
         assertFalse(vendorConsent.isVendorAllowed(31));
         assertFalse(vendorConsent.isVendorAllowed(32));
+
+        // Vendors outside range [1, MaxVendorId] are not allowed
+        assertFalse(vendorConsent.isVendorAllowed(-99));
+        assertFalse(vendorConsent.isVendorAllowed(-1));
+        assertFalse(vendorConsent.isVendorAllowed(0));
+        assertFalse(vendorConsent.isVendorAllowed(33));
+        assertFalse(vendorConsent.isVendorAllowed(34));
+        assertFalse(vendorConsent.isVendorAllowed(99));
     }
 
     @Test
@@ -275,6 +283,14 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(28));
         assertFalse(vendorConsent.isVendorAllowed(31));
         assertFalse(vendorConsent.isVendorAllowed(32));
+
+        // Vendors outside range [1, MaxVendorId] are not allowed
+        assertFalse(vendorConsent.isVendorAllowed(-99));
+        assertFalse(vendorConsent.isVendorAllowed(-1));
+        assertFalse(vendorConsent.isVendorAllowed(0));
+        assertFalse(vendorConsent.isVendorAllowed(33));
+        assertFalse(vendorConsent.isVendorAllowed(34));
+        assertFalse(vendorConsent.isVendorAllowed(99));
     }
 
     @Test
@@ -313,6 +329,14 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(15));
         assertTrue(vendorConsent.isVendorAllowed(31));
         assertTrue(vendorConsent.isVendorAllowed(32));
+
+        // Vendors outside range [1, MaxVendorId] are not allowed
+        assertFalse(vendorConsent.isVendorAllowed(-99));
+        assertFalse(vendorConsent.isVendorAllowed(-1));
+        assertFalse(vendorConsent.isVendorAllowed(0));
+        assertFalse(vendorConsent.isVendorAllowed(33));
+        assertFalse(vendorConsent.isVendorAllowed(34));
+        assertFalse(vendorConsent.isVendorAllowed(99));
     }
 
     @Test(expected = VendorConsentParseException.class)
