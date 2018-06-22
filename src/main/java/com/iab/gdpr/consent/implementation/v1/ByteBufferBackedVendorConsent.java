@@ -112,7 +112,7 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
     @Override
     public boolean isVendorAllowed(int vendorId) {
         final int maxVendorId = getMaxVendorId();
-        if (vendorId < 0 || vendorId > maxVendorId) return false;
+        if (vendorId < 1 || vendorId > maxVendorId) return false;
 
         if (encodingType() == VENDOR_ENCODING_RANGE) {
             final boolean defaultConsent = bits.getBit(DEFAULT_CONSENT_OFFSET);
