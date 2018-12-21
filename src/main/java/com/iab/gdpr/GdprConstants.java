@@ -1,5 +1,8 @@
 package com.iab.gdpr;
 
+/**
+ * Various constants related to positions and sizes of GDPR consent string bits
+ */
 public class GdprConstants {
     public static final int VENDOR_ENCODING_RANGE = 1;
     public static final int VERSION_BIT_OFFSET = 0;

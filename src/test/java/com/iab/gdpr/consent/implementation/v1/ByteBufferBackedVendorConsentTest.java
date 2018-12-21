@@ -1,6 +1,5 @@
 package com.iab.gdpr.consent.implementation.v1;
 
-import com.iab.gdpr.Purpose;
 import com.iab.gdpr.consent.VendorConsent;
 import com.iab.gdpr.consent.VendorConsentDecoder;
 import com.iab.gdpr.exception.VendorConsentParseException;
@@ -570,6 +569,17 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(228));
         assertTrue(vendorConsent.isVendorAllowed(253));
         assertTrue(vendorConsent.isVendorAllowed(1000));
+    }
+
+    @Test(expected = VendorConsentParseException.class)
+    public void testCorruptString() {
+        final String corruptConsentString = "BOUy_skOUy_skABABBENA8-AAAAbN7"; // Cut short at 22 bytes
+
+        // When: decoder is called
+        final VendorConsent vendorConsent = VendorConsentDecoder.fromBase64String(corruptConsentString);
+
+        vendorConsent.isVendorAllowed(10);
+        fail("VendorConsentParseException expected");
     }
 
 }

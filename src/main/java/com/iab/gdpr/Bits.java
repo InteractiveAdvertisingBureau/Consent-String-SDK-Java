@@ -27,6 +27,8 @@ public class Bits {
      */
     public boolean getBit(int index) {
         int byteIndex = index / 8;
+        if (byteIndex > bytes.length - 1)
+            throw new VendorConsentParseException("Expected consent string to contain at least " + byteIndex + "bytes, but found only " + bytes.length + " bytes");
         int bitExact = index % 8;
         byte b = bytes[byteIndex];
         return (b & bytePows[bitExact]) != 0;
@@ -61,7 +63,7 @@ public class Bits {
      *            the nth to begin interpreting from
      * @param size:
      *            the number of bits to interpret
-     * @return
+     * @return integer value
      * @throws VendorConsentException
      *             when the bits cannot fit in an int sized field
      */
@@ -113,7 +115,7 @@ public class Bits {
      * @throws VendorConsentException
      *             when the bits cannot fit in an int sized field
      */
-    public long getLong(int startInclusive, int size) throws VendorConsentException {
+    private long getLong(int startInclusive, int size) throws VendorConsentException {
         if (size > Long.SIZE) {
             throw new VendorConsentParseException("can't fit bit range in long: " + size);
         }
@@ -142,7 +144,7 @@ public class Bits {
      * @throws VendorConsentException
      *             when the bits cannot fit into the provided size
      */
-    public void setLong(int startInclusive, int size, long to) throws VendorConsentException {
+    private void setLong(int startInclusive, int size, long to) throws VendorConsentException {
         if (size > Long.SIZE || to > maxOfSize(size) || to < 0) {
             throw new VendorConsentCreateException("can't fit long into bit range of size " + size);
         }
@@ -158,7 +160,7 @@ public class Bits {
      *            the bit from which to begin interpreting
      * @param size:
      *            the number of bits to interpret
-     * @return
+     * @return instant value
      * @throws VendorConsentException
      *             when the number of bits requested cannot fit in a long
      */
@@ -170,14 +172,6 @@ public class Bits {
     public void setInstantToEpochDeciseconds(int startInclusive, int size, Instant instant)
             throws VendorConsentException {
         setLong(startInclusive, size, instant.toEpochMilli() / 100);
-    }
-
-    /**
-     * @return the number of bits in the bit string
-     *
-     */
-    public int length() {
-        return bytes.length * 8;
     }
 
     /**
@@ -227,24 +221,6 @@ public class Bits {
             int charCode = values[i] - 65;
             setInt(startInclusive + (i * 6), 6, charCode);
         }
-    }
-
-    /**
-     *
-     * @return a string representation of the byte array passed in the constructor. for example, a bit array of [4]
-     *         yields a String of "0100"
-     */
-    public String getBinaryString() {
-        StringBuilder s = new StringBuilder();
-        int size = length();
-        for (int i = 0; i < size; i++) {
-            if (getBit(i)) {
-                s.append("1");
-            } else {
-                s.append("0");
-            }
-        }
-        return s.toString();
     }
 
     public byte[] toByteArray() {
