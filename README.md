@@ -34,7 +34,7 @@ Add dependency to you pom.xml
 <dependency>
   <groupId>com.conversantmedia.gdpr</groupId>
   <artifactId>consent-string-sdk-java</artifactId>
-  <version>2.0.2</version>
+  <version>3.0.2</version>
 </dependency>
 ```
 
