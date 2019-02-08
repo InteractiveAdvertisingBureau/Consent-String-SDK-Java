@@ -81,6 +81,12 @@ public interface VendorConsent {
 
     /**
      *
+     * @return the set of allowed vendor id's which are permitted according to this consent string
+     */
+    Set<Integer> getAllowedVendorIds();
+
+    /**
+     *
      * @return the maximum VendorId for which consent values are given.
      */
     int getMaxVendorId();

@@ -12,6 +12,9 @@ import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.iab.gdpr.Purpose.*;
 import static org.hamcrest.Matchers.is;
@@ -209,7 +212,7 @@ public class ByteBufferBackedVendorConsentTest {
 
     @Test
     public void testBitFieldEncoding() {
-        // Given: vendors 1,25 and 30 in bit field, with max vendor of of 32
+        // Given: vendors 1,25 and 30 in bit field, with max vendor ID of 32
         final String binaryString = "000011" + // Version
                 "001110001110110011010000101000000000" +  // Created
                 "001110001110110011010000101000000000" +  // Updated
@@ -231,6 +234,7 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(1));
         assertTrue(vendorConsent.isVendorAllowed(25));
         assertTrue(vendorConsent.isVendorAllowed(30));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(new HashSet<>(Arrays.asList(1, 25, 30))));
 
         assertFalse(vendorConsent.isVendorAllowed(2));
         assertFalse(vendorConsent.isVendorAllowed(3));
@@ -248,7 +252,7 @@ public class ByteBufferBackedVendorConsentTest {
 
     @Test
     public void testRangeEncodingDefaultFalse() {
-        // Given: vendors 1-25 and 30 with consent, with max vendor IF of 32
+        // Given: vendors 1-25 and 30 with consent, with max vendor ID of 32
         final String binaryString = "000011" + // Version
                 "001110001110110011010000101000000000" +  // Created
                 "001110001110110011010000101000000000" +  // Updated
@@ -278,6 +282,12 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(25));
         assertTrue(vendorConsent.isVendorAllowed(30));
 
+        Set<Integer> expectedVendorIds = IntStream
+                .concat(IntStream.rangeClosed(1, 25), IntStream.of(30))
+                .boxed()
+                .collect(Collectors.toSet());
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
+
         assertFalse(vendorConsent.isVendorAllowed(26));
         assertFalse(vendorConsent.isVendorAllowed(28));
         assertFalse(vendorConsent.isVendorAllowed(31));
@@ -294,7 +304,7 @@ public class ByteBufferBackedVendorConsentTest {
 
     @Test
     public void testRangeEncodingDefaultTrue() {
-        // Given: vendors 1 and 25-30 without consent, with max vendor IF of 32
+        // Given: vendors 1 and 25-30 without consent, with max vendor ID of 32
         final String binaryString = "000011" + // Version
                 "001110001110110011010000101000000000" +  // Created
                 "001110001110110011010000101000000000" +  // Updated
@@ -328,6 +338,12 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(15));
         assertTrue(vendorConsent.isVendorAllowed(31));
         assertTrue(vendorConsent.isVendorAllowed(32));
+
+        Set<Integer> expectedVendorIds = IntStream
+                .concat(IntStream.rangeClosed(2, 24), IntStream.rangeClosed(31, 32))
+                .boxed()
+                .collect(Collectors.toSet());
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
 
         // Vendors outside range [1, MaxVendorId] are not allowed
         assertFalse(vendorConsent.isVendorAllowed(-99));
@@ -402,10 +418,72 @@ public class ByteBufferBackedVendorConsentTest {
         // Then: exception is raised
     }
 
+    @Test(expected = VendorConsentParseException.class)
+    public void testInvalidVendorId3() {
+        // Given: invalid vendor ID in range
+        final String binaryString = "000011" + // Version
+                "001110001110110011010000101000000000" +  // Created
+                "001110001110110011010000101000000000" +  // Updated
+                "000000001111"                         +  // CMP ID
+                "000000000101"                         +  // CMP version
+                "010010"                               +  // Content screen ID
+                "000100001101"                         +  // Language code
+                "000010010110"                         +  // Vendor list version
+                "111110000000001000000001"             +  // Allowed purposes bitmap
+                "0000000000100000"                     +  // Max vendor ID
+                "1"                                    +  // Range encoding
+                "1"                                    +  // Default 1=Consent
+                "000000000010"                         +  // Number of entries = 2
+                "0"                                    +  // First entry single = 0
+                "0000000000101000"                     +  // First entry value = 40 - INVALID
+                "1"                                    +  // Second entry range = 1
+                "0000000000011001"                     +  // Second entry from = 25
+                "0000000000011110"                        // Second entry to = 30
+                ;
+
+        // When: object is constructed
+        ByteBufferBackedVendorConsent vendorConsent = new ByteBufferBackedVendorConsent(Utils.fromBinaryString(binaryString));
+
+        // And: allowed vendor IDs are obtained
+        vendorConsent.getAllowedVendorIds();
+
+        // Then: exception is raised
+    }
+
+    @Test(expected = VendorConsentParseException.class)
+    public void testInvalidVendorId4() {
+        // Given: invalid vendor ID in range
+        final String binaryString = "000011" + // Version
+                "001110001110110011010000101000000000" +  // Created
+                "001110001110110011010000101000000000" +  // Updated
+                "000000001111"                         +  // CMP ID
+                "000000000101"                         +  // CMP version
+                "010010"                               +  // Content screen ID
+                "000100001101"                         +  // Language code
+                "000010010110"                         +  // Vendor list version
+                "111110000000001000000001"             +  // Allowed purposes bitmap
+                "0000000000100000"                     +  // Max vendor ID
+                "1"                                    +  // Range encoding
+                "1"                                    +  // Default 1=Consent
+                "000000000010"                         +  // Number of entries = 2
+                "0"                                    +  // First entry single = 0
+                "0000000000101000"                     +  // First entry value = 40 - INVALID
+                "1"                                    +  // Second entry range = 1
+                "0000000000011001"                     +  // Second entry from = 25
+                "0000000000011110"                        // Second entry to = 30
+                ;
+
+        // When: object is constructed
+        ByteBufferBackedVendorConsent vendorConsent = new ByteBufferBackedVendorConsent(Utils.fromBinaryString(binaryString));
+
+        // And: allowed vendor IDs are obtained
+        vendorConsent.getAllowedVendorIds();
+
+        // Then: exception is raised
+    }
     /*
         Below are tests for encoded strings from previous version of the code
      */
-
 
     @Test
     public void testRealString1() {
@@ -419,6 +497,22 @@ public class ByteBufferBackedVendorConsentTest {
         assertEquals(380, vendorConsent.getMaxVendorId());
         assertTrue(vendorConsent.isVendorAllowed(380));
         assertFalse(vendorConsent.isVendorAllowed(379));
+
+        Set<Integer> expectedVendorIds = new HashSet<>(Arrays.asList(1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+            44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
+            72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 100,
+            101, 102, 104, 105, 108, 109, 110, 111, 112, 113, 114, 115, 119, 120, 122, 124, 125, 126, 127, 128, 129,
+            130, 131, 132, 133, 134, 136, 138, 139, 140, 141, 142, 143, 144, 145, 147, 148, 149, 150, 151, 152, 153,
+            154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 167, 168, 169, 170, 173, 174, 175, 177, 179,
+            180, 182, 183, 184, 185, 188, 189, 190, 191, 192, 193, 194, 195, 197, 198, 199, 200, 201, 202, 203, 205,
+            208, 209, 210, 211, 212, 213, 215, 216, 217, 218, 224, 225, 226, 227, 228, 229, 230, 231, 232, 234, 235,
+            236, 237, 238, 239, 240, 241, 244, 245, 246, 248, 249, 251, 252, 253, 254, 255, 256, 257, 258, 259, 260,
+            261, 262, 264, 265, 266, 269, 270, 272, 273, 274, 275, 276, 277, 278, 279, 280, 281, 282, 284, 285, 288,
+            289, 290, 291, 294, 295, 297, 299, 301, 302, 303, 304, 308, 309, 310, 311, 314, 315, 316, 317, 318, 319,
+            320, 323, 325, 326, 328, 330, 331, 333, 339, 341, 343, 344, 345, 347, 349, 350, 351, 354, 358, 359, 360,
+            361, 369, 371, 378, 380));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test
@@ -447,6 +541,9 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(9));
         assertFalse(vendorConsent.isVendorAllowed(0));
         assertFalse(vendorConsent.isVendorAllowed(10));
+
+        Set<Integer> expectedVendorIds = new HashSet<>(Arrays.asList(1, 2, 4, 5, 7, 9));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test
@@ -479,6 +576,13 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(0));
         assertFalse(vendorConsent.isVendorAllowed(411));
         assertFalse(vendorConsent.isVendorAllowed(3244));
+
+        Set<Integer> expectedVendorIds = IntStream.concat(IntStream.of(20), IntStream.rangeClosed(200, 410))
+                .boxed()
+                .collect(Collectors.toSet());
+        expectedVendorIds.add(515);
+        expectedVendorIds.addAll(IntStream.rangeClosed(5000, 5024).boxed().collect(Collectors.toSet()));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test
@@ -511,6 +615,17 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(47));
         assertFalse(vendorConsent.isVendorAllowed(146));
         assertTrue(vendorConsent.isVendorAllowed(147));
+
+        Set<Integer> expectedVendorIds = new HashSet<>(Arrays.asList(1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
+            17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43,
+            45, 46, 48, 49, 50, 51, 52, 53, 55, 56, 57, 58, 59, 60, 61, 62, 63, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74,
+            75, 76, 77, 78, 79, 80, 81, 82, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 97, 98, 100, 101, 102, 104,
+            105, 108, 109, 110, 111, 112, 113, 114, 115, 118, 120, 122, 124, 125, 126, 127, 128, 129, 130, 131, 132,
+            133, 136, 138, 140, 141, 142, 144, 145, 147, 149, 151, 153, 154, 155, 156, 157, 158, 159, 160, 162, 163,
+            164, 167, 168, 169, 170, 173, 174, 175, 179, 180, 182, 183, 185, 188, 189, 190, 192, 193, 194, 195, 197,
+            198, 200, 203, 205, 208, 209, 210, 211, 213, 215, 217, 224, 225, 226, 227, 229, 232, 234, 235, 237, 240,
+            241, 244, 245, 246, 249, 254, 255, 256, 258, 260, 269, 273, 274, 276, 279, 280, 45811));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test
@@ -528,6 +643,9 @@ public class ByteBufferBackedVendorConsentTest {
         assertFalse(vendorConsent.isVendorAllowed(1));
         assertFalse(vendorConsent.isVendorAllowed(3));
         assertTrue(vendorConsent.isVendorAllowed(27));
+
+        Set<Integer> expectedVendorIds = new HashSet<>(Arrays.asList(9, 25, 27, 28, 30));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test
@@ -569,6 +687,10 @@ public class ByteBufferBackedVendorConsentTest {
         assertTrue(vendorConsent.isVendorAllowed(228));
         assertTrue(vendorConsent.isVendorAllowed(253));
         assertTrue(vendorConsent.isVendorAllowed(1000));
+
+        Set<Integer> expectedVendorIds = new HashSet<>(
+                Arrays.asList(10, 13, 24, 25, 32, 36, 45, 50, 52, 56, 62, 69, 76, 81, 104, 138, 144, 228, 253, 1000));
+        assertThat(vendorConsent.getAllowedVendorIds(), is(expectedVendorIds));
     }
 
     @Test(expected = VendorConsentParseException.class)

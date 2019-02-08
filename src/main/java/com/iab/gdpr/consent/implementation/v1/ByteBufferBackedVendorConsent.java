@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import static com.iab.gdpr.GdprConstants.*;
 
@@ -94,6 +95,49 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
     }
 
     @Override
+    public Set<Integer> getAllowedVendorIds() {
+        final Set<Integer> allowedVendorIds = new HashSet<>();
+        final int maxVendorId = getMaxVendorId();
+        if (encodingType() == VENDOR_ENCODING_RANGE) {
+            final Set<Integer> vendorIds = new HashSet<>();
+            final boolean isDefaultConsent = bits.getBit(DEFAULT_CONSENT_OFFSET);
+            final int numEntries = bits.getInt(NUM_ENTRIES_OFFSET, NUM_ENTRIES_SIZE);
+            int currentOffset = RANGE_ENTRY_OFFSET;
+            for (int i = 0; i < numEntries; i++) {
+                final boolean isRange = bits.getBit(currentOffset);
+                currentOffset++;
+                if(isRange) {
+                    int startVendorId = bits.getInt(currentOffset, VENDOR_ID_SIZE);
+                    currentOffset += VENDOR_ID_SIZE;
+                    int endVendorId = bits.getInt(currentOffset, VENDOR_ID_SIZE);
+                    currentOffset += VENDOR_ID_SIZE;
+                    validate(startVendorId, endVendorId, maxVendorId);
+                    IntStream.rangeClosed(startVendorId, endVendorId).forEach(vendorIds::add);
+                } else {
+                    int singleVendorId = bits.getInt(currentOffset, VENDOR_ID_SIZE);
+                    currentOffset += VENDOR_ID_SIZE;
+                    validate(singleVendorId, maxVendorId);
+                    vendorIds.add(singleVendorId);
+                }
+            }
+            if (isDefaultConsent) {
+                IntStream.rangeClosed(1, getMaxVendorId())
+                    .filter(id -> !vendorIds.contains(id))
+                    .forEach(allowedVendorIds::add);
+            } else {
+                allowedVendorIds.addAll(vendorIds);
+            }
+        } else {
+            for (int i = VENDOR_BITFIELD_OFFSET; i < VENDOR_BITFIELD_OFFSET + maxVendorId; i++) {
+                if(bits.getBit(i)) {
+                    allowedVendorIds.add(i - VENDOR_BITFIELD_OFFSET + 1);
+                }
+            }
+        }
+        return allowedVendorIds;
+    }
+
+    @Override
     public int getMaxVendorId() {
         return bits.getInt(MAX_VENDOR_ID_OFFSET, MAX_VENDOR_ID_SIZE);
     }
@@ -154,27 +198,32 @@ public class ByteBufferBackedVendorConsent implements VendorConsent {
                 currentOffset += VENDOR_ID_SIZE;
                 int endVendorId = bits.getInt(currentOffset, VENDOR_ID_SIZE);
                 currentOffset += VENDOR_ID_SIZE;
-
-                if (startVendorId > endVendorId || endVendorId > maxVendorId) {
-                    throw new VendorConsentParseException(
-                            "Start VendorId must not be greater than End VendorId and "
-                                    + "End VendorId must not be greater than Max Vendor Id");
-                }
+                validate(startVendorId, endVendorId, maxVendorId);
                 if (vendorId >= startVendorId && vendorId <= endVendorId) return true;
 
             } else {
                 int singleVendorId = bits.getInt(currentOffset, VENDOR_ID_SIZE);
                 currentOffset += VENDOR_ID_SIZE;
-
-                if (singleVendorId > maxVendorId) {
-                    throw new VendorConsentParseException(
-                            "VendorId in the range entries must not be greater than Max VendorId");
-                }
-
+                validate(singleVendorId, maxVendorId);
                 if (singleVendorId == vendorId) return true;
             }
         }
         return false;
+    }
+
+    private static void validate(int startVendorId, int endVendorId, int maxVendorId) throws VendorConsentParseException {
+        if (startVendorId > endVendorId || endVendorId > maxVendorId) {
+            throw new VendorConsentParseException(
+                    "Start VendorId must not be greater than End VendorId and "
+                            + "End VendorId must not be greater than Max Vendor Id");
+        }
+    }
+
+    private static void validate(int singleVendorId, int maxVendorId) throws VendorConsentParseException{
+        if (singleVendorId > maxVendorId) {
+            throw new VendorConsentParseException(
+                    "VendorId in the range entries must not be greater than Max VendorId");
+        }
     }
 
     @Override
