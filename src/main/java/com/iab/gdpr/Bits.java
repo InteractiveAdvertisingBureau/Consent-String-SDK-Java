@@ -28,7 +28,7 @@ public class Bits {
     public boolean getBit(int index) {
         int byteIndex = index / 8;
         if (byteIndex > bytes.length - 1)
-            throw new VendorConsentParseException("Expected consent string to contain at least " + byteIndex + "bytes, but found only " + bytes.length + " bytes");
+            throw new VendorConsentParseException("Expected consent string to contain at least " + (byteIndex + 1) + " bytes, but found only " + bytes.length + " bytes");
         int bitExact = index % 8;
         byte b = bytes[byteIndex];
         return (b & bytePows[bitExact]) != 0;
